@@ -12,14 +12,16 @@ function App() {
       <Box component="header">
         <NavBar />
       </Box>
-      <Routes>
-        <Route path="/" element={<Navigate to="/merchants" />} />
-        <Route path="/merchants" element={<Merchants />} />
-        <Route path="/consumers" element={<Consumer />} />
-        <Route path="/consumer-detail" element={<ConsumerDetail />} />
-        <Route path="/merchant-detail" element={<MerchantDetail />} />
-        <Route path="*" element={<Navigate to="/merchants" />} />
-      </Routes>
+      <Box component="main" sx={{ mt: "10vh" }}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/merchants" />} />
+          <Route path="/merchants" element={<Merchants />} />
+          <Route path="/consumers" element={<Consumer />} />
+          <Route path="/consumer-detail" element={<ConsumerDetail />} />
+          <Route path="/merchant-detail" element={<MerchantDetail />} />
+          <Route path="*" element={<Navigate to="/merchants" />} />
+        </Routes>
+      </Box>
     </>
   );
 }
