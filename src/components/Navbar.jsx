@@ -5,14 +5,16 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const navItems = [
-  { id: 1, label: "Merchants", link: "/" },
+  { id: 1, label: "Merchants", link: "/merchants" },
   { id: 2, label: "Consumers", link: "/consumers" },
 ];
 
 function NavBar() {
+  const location = useLocation();
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -32,7 +34,12 @@ function NavBar() {
                 to={item.link}
                 style={{ textDecoration: "none" }}
               >
-                <Button sx={{ color: "#fff" }}>{item.label}</Button>
+                <Button
+                  sx={{ color: "#fff" }}
+                  className={location.pathname === item.link ? "active" : ""}
+                >
+                  {item.label}
+                </Button>
               </Link>
             ))}
           </Box>
