@@ -1,14 +1,26 @@
-import * as React from "react";
-import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
+import NavBar from "./components/Navbar";
+import { Box } from "@mui/material";
+import Merchants from "./components/Merchants";
+import Consumer from "./components/Consumer";
+import { Routes, Route, Navigate } from "react-router";
+import MerchantDetail from "./components/Merchant-Detail";
+import ConsumerDetail from "./components/Consumer-Detail";
 
 function App() {
   return (
-    <Stack spacing={2} direction="row">
-      <Button variant="text">Text</Button>
-      <Button variant="contained">Contained</Button>
-      <Button variant="outlined">Outlined</Button>
-    </Stack>
+    <>
+      <Box component="header">
+        <NavBar />
+      </Box>
+      <Routes>
+        <Route path="/" element={<Navigate to="/merchants" />} />
+        <Route path="/merchants" element={<Merchants />} />
+        <Route path="/consumers" element={<Consumer />} />
+        <Route path="/consumer-detail" element={<ConsumerDetail />} />
+        <Route path="/merchant-detail" element={<MerchantDetail />} />
+        <Route path="*" element={<Navigate to="/merchants" />} />
+      </Routes>
+    </>
   );
 }
 
