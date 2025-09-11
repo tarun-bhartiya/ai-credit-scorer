@@ -23,45 +23,50 @@ import {
   Star,
   ArrowBack,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { getScoreColor, getTierColor } from "../utils";
+import RecommendationsSection from "./RecommendationsSection";
 
 const MerchantDetail = () => {
   const [merchantData, setMerchantData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const params = useParams();
 
-  // Simulate API call
+  // Get merchantId from URL params
+  const merchantId = params.merchantId;
+
+  // API call to fetch merchant data
   useEffect(() => {
     const fetchMerchantData = async () => {
       try {
         setLoading(true);
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setError(null);
 
-        // Dummy API response
-        const data = {
-          MerchantID: "M001",
-          MerchantName: "Merchant A",
-          RepaymentRate: 0.98,
-          DisputeCount: 1,
-          DefaultRate: 0.01,
-          TransactionVolume: 120,
-          TrustScore: 96.7,
-          LoyaltyTier: "Gold",
-        };
+        // Make API request to the specified endpoint
+        const response = await fetch(
+          `http://127.0.0.1:8000/merchants/${merchantId}`
+        );
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
         setMerchantData(data);
       } catch (err) {
         setError(`Failed to fetch merchant data: ${err.message}`);
+        console.error("Error fetching merchant data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMerchantData();
-  }, []);
+    if (merchantId) {
+      fetchMerchantData();
+    }
+  }, [merchantId]);
 
   if (loading) {
     return (
@@ -243,29 +248,37 @@ const MerchantDetail = () => {
           </Card>
         </Grid>
 
-        {/* Dispute Count */}
+        {/* Dispute Rate */}
         <Grid item xs={12} md={6}>
           <Card elevation={2} sx={{ height: "100%", borderRadius: 2 }}>
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Star sx={{ color: "#FF9800", mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Dispute Count
+                  Dispute Rate
                 </Typography>
               </Box>
               <Typography
                 variant="h4"
                 sx={{
-                  color:
-                    merchantData.DisputeCount === 0 ? "#4CAF50" : "#FF9800",
+                  color: merchantData.DisputeRate === 0 ? "#4CAF50" : "#FF9800",
                   fontWeight: "bold",
                 }}
               >
-                {merchantData.DisputeCount}
+                {(merchantData.DisputeRate * 100).toFixed(1)}%
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Active Disputes
-              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={merchantData.DisputeRate * 100}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "#FFF3E0",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#FF9800",
+                  },
+                }}
+              />
             </CardContent>
           </Card>
         </Grid>
@@ -278,22 +291,32 @@ const MerchantDetail = () => {
         </Typography>
         <Divider sx={{ mb: 2 }} />
         <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-          This merchant demonstrates strong business reliability with a trust
-          score of <strong>{merchantData.TrustScore}</strong> and maintains{" "}
-          {merchantData.LoyaltyTier} tier status. With a{" "}
-          {(merchantData.RepaymentRate * 100).toFixed(1)}% repayment rate,{" "}
-          {merchantData.TransactionVolume} total transactions, and{" "}
-          {merchantData.DisputeCount} active dispute
-          {merchantData.DisputeCount !== 1 ? "s" : ""}, this merchant represents
-          a{" "}
-          {merchantData.TrustScore >= 90
-            ? "low"
-            : merchantData.TrustScore >= 70
-            ? "moderate"
-            : "high"}
-          -risk profile for business partnerships and credit decisions.
+          {merchantData.Summary ||
+            `This merchant demonstrates strong business reliability with a trust
+            score of ${merchantData.TrustScore} and maintains
+            ${merchantData.LoyaltyTier} tier status. With a
+            ${(merchantData.RepaymentRate * 100).toFixed(1)}% repayment rate,
+            ${merchantData.TransactionVolume} total transactions, and
+            ${(merchantData.DisputeRate * 100).toFixed(
+              1
+            )}% dispute rate, this merchant represents a
+            ${
+              merchantData.TrustScore >= 90
+                ? "low"
+                : merchantData.TrustScore >= 70
+                ? "moderate"
+                : "high"
+            }-risk 
+            profile for business partnerships and credit decisions.`}
         </Typography>
       </Paper>
+
+      {/* Recommendations Section */}
+      <RecommendationsSection
+        recommendations={merchantData.Recommendations}
+        entityId={merchantData.MerchantID}
+        entityType="Merchant"
+      />
     </Container>
   );
 };

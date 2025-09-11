@@ -23,45 +23,50 @@ import {
   Star,
   ArrowBack,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { getScoreColor, getTierColor } from "../utils";
+import RecommendationsSection from "./RecommendationsSection";
 
 const ConsumerDetail = () => {
   const [consumerData, setConsumerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const params = useParams();
 
-  // Simulate API call
+  // Get customerId from URL params
+  const customerId = params.customerId;
+
+  // API call to fetch consumer data
   useEffect(() => {
     const fetchConsumerData = async () => {
       try {
         setLoading(true);
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setError(null);
 
-        // Dummy API response
-        const data = {
-          CustomerID: "C001",
-          CustomerName: "Customer 1",
-          RepaymentRate: 0.99,
-          DisputeCount: 0,
-          DefaultRate: 0,
-          TransactionVolume: 10,
-          TrustScore: 99.5,
-          LoyaltyTier: "Gold",
-        };
+        // Make API request to the specified endpoint
+        const response = await fetch(
+          `http://127.0.0.1:8000/customers/${customerId}`
+        );
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
         setConsumerData(data);
       } catch (err) {
         setError(`Failed to fetch consumer data: ${err.message}`);
+        console.error("Error fetching consumer data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchConsumerData();
-  }, []);
+    if (customerId) {
+      fetchConsumerData();
+    }
+  }, [customerId]);
 
   if (loading) {
     return (
@@ -281,14 +286,16 @@ const ConsumerDetail = () => {
         </Typography>
         <Divider sx={{ mb: 2 }} />
         <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-          This customer demonstrates excellent financial reliability with a
-          trust score of <strong>{consumerData.TrustScore}</strong> and
-          maintains {consumerData.LoyaltyTier} tier status. With a{" "}
-          {(consumerData.RepaymentRate * 100).toFixed(1)}% repayment rate and{" "}
-          {consumerData.DisputeCount} disputes, this customer represents a
-          low-risk profile for lending decisions.
+          {consumerData.Summary}
         </Typography>
       </Paper>
+
+      {/* Recommendations Section */}
+      <RecommendationsSection
+        recommendations={consumerData.Recommendations}
+        entityId={consumerData.CustomerID}
+        entityType="Customer"
+      />
     </Container>
   );
 };

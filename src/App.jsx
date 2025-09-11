@@ -17,8 +17,8 @@ function App() {
           <Route path="/" element={<Navigate to="/merchants" />} />
           <Route path="/merchants" element={<Merchants />} />
           <Route path="/consumers" element={<Consumer />} />
-          <Route path="/consumer-detail" element={<ConsumerDetail />} />
-          <Route path="/merchant-detail" element={<MerchantDetail />} />
+          <Route path="/consumer/:customerId" element={<ConsumerDetail />} />
+          <Route path="/merchant/:merchantId" element={<MerchantDetail />} />
           <Route path="*" element={<Navigate to="/merchants" />} />
         </Routes>
       </Box>
