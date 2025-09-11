@@ -20,6 +20,13 @@ function NavBar() {
     navigate("/");
   };
 
+  const isActive = (itemLink) => {
+    return (
+      location.pathname === itemLink ||
+      location.pathname.startsWith(itemLink + "/")
+    );
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -32,6 +39,7 @@ function NavBar() {
               flexGrow: 1,
               display: { xs: "none", sm: "block" },
               cursor: "pointer",
+              fontWeight: "bold",
               "&:hover": {
                 opacity: 0.8,
               },
@@ -48,7 +56,7 @@ function NavBar() {
               >
                 <Button
                   sx={{ color: "#fff" }}
-                  className={location.pathname === item.link ? "active" : ""}
+                  className={isActive(item.link) ? "active" : ""}
                 >
                   {item.label}
                 </Button>

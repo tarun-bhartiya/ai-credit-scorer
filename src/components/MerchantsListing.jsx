@@ -15,6 +15,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import { useNavigate } from "react-router";
+import QueryTextarea from "./QueryTextarea";
 
 const MerchantsListing = () => {
   const [merchants, setMerchants] = useState([]);
@@ -110,12 +111,17 @@ const MerchantsListing = () => {
 
   return (
     <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Merchants
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        View and manage all merchants in the system
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 3, mb: 3 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" gutterBottom>
+            Merchants
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            View and manage all merchants in the system
+          </Typography>
+        </Box>
+        <QueryTextarea />
+      </Box>
 
       <TableContainer component={Paper}>
         <Table>
