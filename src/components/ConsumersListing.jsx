@@ -24,6 +24,7 @@ const ConsumersListing = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [isQueryMode, setIsQueryMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,6 +70,18 @@ const ConsumersListing = () => {
 
   const handleRowClick = (customerId) => {
     navigate(`/consumers/${customerId}`);
+  };
+
+  const handleQueryResult = (result) => {
+    if (result.error) {
+      // setError(result.error);
+      // setIsQueryMode(false);
+    } else {
+      setConsumers(result); // Set consumers to only contain the query result
+      setTotalCount(1);
+      setIsQueryMode(true);
+      setError(null);
+    }
   };
 
   const getLoyaltyTierColor = (tier) => {
@@ -120,7 +133,7 @@ const ConsumersListing = () => {
             View and manage all consumers in the system
           </Typography>
         </Box>
-        <QueryTextarea />
+        <QueryTextarea type="consumers" onQueryResult={handleQueryResult} />
       </Box>
 
       <TableContainer component={Paper}>
@@ -170,15 +183,17 @@ const ConsumersListing = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={totalCount}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[5, 10, 25, 50]}
-      />
+      {!isQueryMode && (
+        <TablePagination
+          component="div"
+          count={totalCount}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
+      )}
     </Box>
   );
 };

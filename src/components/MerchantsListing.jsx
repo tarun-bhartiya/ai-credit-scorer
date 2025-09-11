@@ -24,6 +24,7 @@ const MerchantsListing = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [isQueryMode, setIsQueryMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,6 +89,18 @@ const MerchantsListing = () => {
     navigate(`/merchants/${merchantId}`);
   };
 
+  const handleQueryResult = (result) => {
+    if (result.error) {
+      // setError(result.error);
+      // setIsQueryMode(false);
+    } else {
+      setMerchants(result); // Set merchants to only contain the query result
+      setTotalCount(1);
+      setIsQueryMode(true);
+      setError(null);
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -120,7 +133,7 @@ const MerchantsListing = () => {
             View and manage all merchants in the system
           </Typography>
         </Box>
-        <QueryTextarea />
+        <QueryTextarea type="merchants" onQueryResult={handleQueryResult} />
       </Box>
 
       <TableContainer component={Paper}>
@@ -178,15 +191,17 @@ const MerchantsListing = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={totalCount}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[5, 10, 25, 50]}
-      />
+      {!isQueryMode && (
+        <TablePagination
+          component="div"
+          count={totalCount}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
+      )}
     </Box>
   );
 };
