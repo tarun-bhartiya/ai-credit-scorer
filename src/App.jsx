@@ -21,8 +21,8 @@ function App() {
           <Route path="/consumers" element={<ConsumersListing />} />
           <Route path="/merchants-dashboard" element={<Merchants />} />
           <Route path="/consumer-dashboard" element={<Consumer />} />
-          <Route path="/consumer/:customerId" element={<ConsumerDetail />} />
-          <Route path="/merchant/:merchantId" element={<MerchantDetail />} />
+          <Route path="/consumers/:customerId" element={<ConsumerDetail />} />
+          <Route path="/merchants/:merchantId" element={<MerchantDetail />} />
           <Route path="*" element={<Navigate to="/merchants" />} />
         </Routes>
       </Box>

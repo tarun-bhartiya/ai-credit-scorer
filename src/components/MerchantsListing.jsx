@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -13,10 +13,7 @@ import {
   CircularProgress,
   Alert,
   TablePagination,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 
 const MerchantsListing = () => {
@@ -29,32 +26,36 @@ const MerchantsListing = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchMerchants = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Note: The backend route is /merchants but we need to use the leaderboard endpoint
+        // which is likely at /leaderboard/merchants based on the file structure
+        const response = await fetch(
+          `http://localhost:8000/merchants?limit=${rowsPerPage}&offset=${
+            page * rowsPerPage
+          }`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setMerchants(data);
+        setTotalCount(data.length); // Note: This is a simplified approach, ideally the API should return total count
+      } catch (err) {
+        console.error("Error fetching merchants:", err);
+        setError("Failed to load merchants. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMerchants();
   }, [page, rowsPerPage]);
-
-  const fetchMerchants = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Note: The backend route is /merchants but we need to use the leaderboard endpoint
-      // which is likely at /leaderboard/merchants based on the file structure
-      const response = await fetch(`http://localhost:8000/merchants?limit=${rowsPerPage}&offset=${page * rowsPerPage}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setMerchants(data);
-      setTotalCount(data.length); // Note: This is a simplified approach, ideally the API should return total count
-    } catch (err) {
-      console.error("Error fetching merchants:", err);
-      setError("Failed to load merchants. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -65,30 +66,35 @@ const MerchantsListing = () => {
     setPage(0);
   };
 
-  const handleViewDetails = (merchantId) => {
-    navigate(`/merchant-detail?id=${merchantId}`);
-  };
-
   const getLoyaltyTierColor = (tier) => {
     switch (tier?.toLowerCase()) {
-      case 'gold':
-        return 'warning';
-      case 'silver':
-        return 'default';
-      case 'bronze':
-        return 'secondary';
+      case "gold":
+        return "warning";
+      case "silver":
+        return "default";
+      case "bronze":
+        return "secondary";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const formatTrustScore = (score) => {
-    return typeof score === 'number' ? score.toFixed(2) : 'N/A';
+    return typeof score === "number" ? score.toFixed(2) : "N/A";
+  };
+
+  const handleRowClick = (merchantId) => {
+    navigate(`/merchants/${merchantId}`);
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -120,12 +126,21 @@ const MerchantsListing = () => {
               <TableCell align="center">Exclusive Partner</TableCell>
               <TableCell align="right">Trust Score</TableCell>
               <TableCell align="center">Loyalty Tier</TableCell>
-              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {merchants.map((merchant) => (
-              <TableRow key={merchant.MerchantID} hover>
+              <TableRow
+                key={merchant.MerchantID}
+                hover
+                onClick={() => handleRowClick(merchant.MerchantID)}
+                sx={{
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                  },
+                }}
+              >
                 <TableCell>{merchant.MerchantID}</TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
@@ -150,16 +165,6 @@ const MerchantsListing = () => {
                     color={getLoyaltyTierColor(merchant.LoyaltyTier)}
                     size="small"
                   />
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="View Details">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleViewDetails(merchant.MerchantID)}
-                    >
-                      <Visibility />
-                    </IconButton>
-                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

@@ -13,10 +13,7 @@ import {
   CircularProgress,
   Alert,
   TablePagination,
-  IconButton,
-  Tooltip,
 } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 
 const ConsumersListing = () => {
@@ -29,32 +26,36 @@ const ConsumersListing = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchConsumers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Note: The backend route is /customers but we need to use the leaderboard endpoint
+        // which is likely at /leaderboard/customers based on the file structure
+        const response = await fetch(
+          `http://localhost:8000/customers?limit=${rowsPerPage}&offset=${
+            page * rowsPerPage
+          }`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setConsumers(data);
+        setTotalCount(data.length); // Note: This is a simplified approach, ideally the API should return total count
+      } catch (err) {
+        console.error("Error fetching consumers:", err);
+        setError("Failed to load consumers. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchConsumers();
   }, [page, rowsPerPage]);
-
-  const fetchConsumers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Note: The backend route is /customers but we need to use the leaderboard endpoint
-      // which is likely at /leaderboard/customers based on the file structure
-      const response = await fetch(`http://localhost:8000/customers?limit=${rowsPerPage}&offset=${page * rowsPerPage}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setConsumers(data);
-      setTotalCount(data.length); // Note: This is a simplified approach, ideally the API should return total count
-    } catch (err) {
-      console.error("Error fetching consumers:", err);
-      setError("Failed to load consumers. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -65,30 +66,35 @@ const ConsumersListing = () => {
     setPage(0);
   };
 
-  const handleViewDetails = (customerId) => {
-    navigate(`/consumer-detail?id=${customerId}`);
+  const handleRowClick = (customerId) => {
+    navigate(`/consumers/${customerId}`);
   };
 
   const getLoyaltyTierColor = (tier) => {
     switch (tier?.toLowerCase()) {
-      case 'gold':
-        return 'warning';
-      case 'silver':
-        return 'default';
-      case 'bronze':
-        return 'secondary';
+      case "gold":
+        return "warning";
+      case "silver":
+        return "default";
+      case "bronze":
+        return "secondary";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const formatTrustScore = (score) => {
-    return typeof score === 'number' ? score.toFixed(2) : 'N/A';
+    return typeof score === "number" ? score.toFixed(2) : "N/A";
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -119,12 +125,21 @@ const ConsumersListing = () => {
               <TableCell>Customer Name</TableCell>
               <TableCell align="right">Trust Score</TableCell>
               <TableCell align="center">Loyalty Tier</TableCell>
-              <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {consumers.map((consumer) => (
-              <TableRow key={consumer.CustomerID} hover>
+              <TableRow
+                key={consumer.CustomerID}
+                hover
+                onClick={() => handleRowClick(consumer.CustomerID)}
+                sx={{
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                  },
+                }}
+              >
                 <TableCell>{consumer.CustomerID}</TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
@@ -142,16 +157,6 @@ const ConsumersListing = () => {
                     color={getLoyaltyTierColor(consumer.LoyaltyTier)}
                     size="small"
                   />
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="View Details">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleViewDetails(consumer.CustomerID)}
-                    >
-                      <Visibility />
-                    </IconButton>
-                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

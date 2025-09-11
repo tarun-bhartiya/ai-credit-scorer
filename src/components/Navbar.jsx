@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 const navItems = [
   { id: 1, label: "Merchants", link: "/merchants" },
@@ -14,6 +14,11 @@ const navItems = [
 
 function NavBar() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -21,9 +26,16 @@ function NavBar() {
       <AppBar component="nav">
         <Toolbar>
           <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}
+            variant="h5"
+            onClick={handleLogoClick}
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", sm: "block" },
+              cursor: "pointer",
+              "&:hover": {
+                opacity: 0.8,
+              },
+            }}
           >
             SnapScore
           </Typography>
