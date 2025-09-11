@@ -1,0 +1,175 @@
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Box,
+  Chip,
+  CircularProgress,
+  Alert,
+  TablePagination,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import { Visibility } from "@mui/icons-material";
+import { useNavigate } from "react-router";
+
+const ConsumersListing = () => {
+  const [consumers, setConsumers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchConsumers();
+  }, [page, rowsPerPage]);
+
+  const fetchConsumers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Note: The backend route is /customers but we need to use the leaderboard endpoint
+      // which is likely at /leaderboard/customers based on the file structure
+      const response = await fetch(`http://localhost:8000/customers?limit=${rowsPerPage}&offset=${page * rowsPerPage}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setConsumers(data);
+      setTotalCount(data.length); // Note: This is a simplified approach, ideally the API should return total count
+    } catch (err) {
+      console.error("Error fetching consumers:", err);
+      setError("Failed to load consumers. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleViewDetails = (customerId) => {
+    navigate(`/consumer-detail?id=${customerId}`);
+  };
+
+  const getLoyaltyTierColor = (tier) => {
+    switch (tier?.toLowerCase()) {
+      case 'gold':
+        return 'warning';
+      case 'silver':
+        return 'default';
+      case 'bronze':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
+  const formatTrustScore = (score) => {
+    return typeof score === 'number' ? score.toFixed(2) : 'N/A';
+  };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  return (
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>
+        Consumers
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        View and manage all consumers in the system
+      </Typography>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Customer ID</TableCell>
+              <TableCell>Customer Name</TableCell>
+              <TableCell align="right">Trust Score</TableCell>
+              <TableCell align="center">Loyalty Tier</TableCell>
+              <TableCell align="center">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {consumers.map((consumer) => (
+              <TableRow key={consumer.CustomerID} hover>
+                <TableCell>{consumer.CustomerID}</TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight="medium">
+                    {consumer.CustomerName}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Typography variant="body2" fontWeight="medium">
+                    {formatTrustScore(consumer.TrustScore)}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Chip
+                    label={consumer.LoyaltyTier || "N/A"}
+                    color={getLoyaltyTierColor(consumer.LoyaltyTier)}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip title="View Details">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleViewDetails(consumer.CustomerID)}
+                    >
+                      <Visibility />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={totalCount}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+      />
+    </Box>
+  );
+};
+
+export default ConsumersListing;

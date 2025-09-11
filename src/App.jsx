@@ -2,6 +2,8 @@ import NavBar from "./components/Navbar";
 import { Box } from "@mui/material";
 import Merchants from "./components/Merchants";
 import Consumer from "./components/Consumer";
+import MerchantsListing from "./components/MerchantsListing";
+import ConsumersListing from "./components/ConsumersListing";
 import { Routes, Route, Navigate } from "react-router";
 import MerchantDetail from "./components/Merchant-Detail";
 import ConsumerDetail from "./components/Consumer-Detail";
@@ -15,8 +17,10 @@ function App() {
       <Box component="main" sx={{ mt: "10vh" }}>
         <Routes>
           <Route path="/" element={<Navigate to="/merchants" />} />
-          <Route path="/merchants" element={<Merchants />} />
-          <Route path="/consumers" element={<Consumer />} />
+          <Route path="/merchants" element={<MerchantsListing />} />
+          <Route path="/consumers" element={<ConsumersListing />} />
+          <Route path="/merchants-dashboard" element={<Merchants />} />
+          <Route path="/consumer-dashboard" element={<Consumer />} />
           <Route path="/consumer/:customerId" element={<ConsumerDetail />} />
           <Route path="/merchant/:merchantId" element={<MerchantDetail />} />
           <Route path="*" element={<Navigate to="/merchants" />} />
